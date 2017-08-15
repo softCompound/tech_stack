@@ -1,5 +1,9 @@
 import React, { Component } from 'react';
-import { Text, TouchableWithoutFeedback, View } from 'react-native';
+import {
+    Text, LayoutAnimation,
+    TouchableWithoutFeedback,
+    View, UIManager, Platform
+} from 'react-native';
 import { CardSection } from './common';
 import { connect } from 'react-redux';
 //get all functions from actions
@@ -13,19 +17,32 @@ class ListItem extends Component {
      */
     constructor(props) {
         super(props);
+
+        if (Platform.OS === 'android') {
+            UIManager.setLayoutAnimationEnabledExperimental && UIManager.setLayoutAnimationEnabledExperimental(true);
+        }
+    }
+
+    /**
+     * This method is inovked immediately before rendering when new props or state are being received. This
+     * method is not called in for the initial render but called on update just before the render function
+     * is invoked. An update to the state at this stage will not cause the component to re-render.
+     */
+    componentWillUpdate() {
+        LayoutAnimation.spring();
     }
 
     /**
      * 
      */
     renderDescription() {
-        const { library, selectLibraryId } = this.props;
+        const { library, expanded } = this.props;
 
-        if (library.id === selectLibraryId) {
+        if (expanded) {
             return (
                 <CardSection>
-                    <Text> {library.description} </Text>
-                </CardSection>
+                    <Text style={{ flex: 1 }}> {library.description} </Text>
+                </CardSection >
             );
         }
     }
@@ -61,14 +78,14 @@ const styles = {
 
 
 /**
- * 
+ * mapStateToProps is by convention called with a second arguement that is the props of this 
+ * component which in our case is this.props.library passed to us by the LibraryList component.
  * @param {*} state 
+ * @param {*} ownProps 
  */
-const mapStateToProps = (state) => {
-    console.log(state);
-    return {
-        selectLibraryId: state.selectedLibraryId
-    }
+const mapStateToProps = (state, ownProps) => {
+    const expanded = state.selectedLibraryId === ownProps.library.id;
+    return { expanded };
 };
 
 /**
